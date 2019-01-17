@@ -17,7 +17,7 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-@import "~common/scss/variable.scss";
+@import "../../common/scss/variable.scss";
 .tab {
   display: flex;
   line-height: 44px;

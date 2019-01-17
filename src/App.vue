@@ -9,8 +9,8 @@
 </template>
 
 <script>
-import mHeader from 'cpnts/m-header/m-header'
-import tab from 'cpnts/tab/tab'
+import mHeader from 'components/m-header/m-header'
+import tab from 'components/tab/tab'
 
 export default {
   data() {

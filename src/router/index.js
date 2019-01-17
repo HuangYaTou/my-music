@@ -5,13 +5,13 @@ import HelloWorld from '@/components/HelloWorld'
 Vue.use(Router);
 
 const recommend = (resolve) => {
-  import('cpnts/recommend/recommend').then((module) => {
+  import('../components/recommend/recommend').then((module) => {
     resolve(module)
   })
 }
 
 const musicList = (resolve) => {
-  import('cpnts/music-list/music-list').then((module) => {
+  import('../components/music-list/music-list').then((module) => {
     resolve(module)
   })
 }

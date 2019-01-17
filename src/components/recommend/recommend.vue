@@ -44,10 +44,111 @@
     </div>
 </template>
 <script>
-import scroll from 'base/scroll/scroll'
-import slider from 'base/slider/slider'
+import scroll from '../../base/scroll/scroll'
+import slider from '../../base/slider/slider'
+import {getBanner, getRecommendList, getRecommendMusic} from '../../api/recommend'
+import {getSongDetail} from '../../api/search'
+import {createRecommendSong} from '../../common/js/song'
+import {ERR_OK} from '../../common/js/config'
+import {mapMutations, mapActions} from 'vuex'
+import {playlistMixin} from '../../common/js/mixin'
 export default {
-
+  mixins: [playlistMixin],
+  data() {
+    return {
+      banner: [],
+      playList: [],
+      recommendMusic: []
+    }
+  },
+  components: {
+    scroll,
+    slider
+  },
+  created() {
+    this._getBanner();
+    this._getRecommendList();
+    this._getRecommendMusic();
+  },
+  methods: {
+    selectBanner(item) {
+      let regHttp = /^http/;
+      let regSong = /\/song\?id/;
+      if(regHttp.test(item.url)){
+        window.open(item.url);
+      }
+      if(regSong.test(item.url)) {
+        getSongDetail(item.targetId).then((res)=>{
+          let m = res.data.songs[0];
+          let song = {
+            id: m.id,
+            singer: m.ar[0].name,
+            name: m.name,
+            image: m.al.picUrl,
+            album: m.al.name
+          };
+          this.insertSong(song);
+          this.setFullScreen(true);
+        });
+      }
+    },
+    selectSong(item) {
+      this.insertSong(item);
+    },
+    handlePlaylist(playlist) {
+      const bottom = playlist.length>0?'60px':'';
+      this.$refs.recommend.style.bottom = bottom;
+      this.$refs.scroll.refresh();
+    },
+    selectList(item) {
+      this.$router.push({
+        path: `/recommend/${item.id}`
+      });
+      this.setMusicList(item);
+    },
+    _getBanner() {
+      getBanner().then((res)=>{
+        if(res.status === ERR_OK) {
+          let list = res.data.banners;
+          this.banner = list.splice(4);
+        }
+        else {
+          console.error('Banner 获取失败');
+        }
+      });
+    },
+    _getRecommendList() {
+      getRecommendList().then((res)=>{
+        if(res.status===ERR_OK) {
+          this.playList = res.data.result;
+        }
+        else {
+          console.error('getRecommendList 获取失败');
+        }
+      });
+    },
+    _getRecommendMusic() {
+      getRecommendMusic().then((res)=>{
+        if(res.status===ERR_OK) {
+          let list = res.data.result.map((item)=>{
+            return createRecommendSong(item);
+          });
+          list.splice(9);  //只要前9个
+          this.recommendMusic = list;
+        }
+        else {
+          console.error('getRecommendMusic 获取失败');
+        }
+      });
+    },
+    ...mapMutations({
+      setMusicList: 'SET_MUSIC_LIST',
+      setFullScreen: 'SET_FULL_SCREEN'
+    }),
+    ...mapActions([
+      'insertSong'
+    ])
+  }
 }
 </script>
 <style lang="scss" scoped>
