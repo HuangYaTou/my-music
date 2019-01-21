@@ -9,8 +9,8 @@
 </template>
 
 <script>
-import mHeader from 'components/m-header/m-header'
-import tab from 'components/tab/tab'
+import mHeader from './components/m-header/m-header'
+import tab from './components/tab/tab'
 
 export default {
   data() {
@@ -45,7 +45,7 @@ export default {
 </script>
 
 <style lang="scss">
-@import 'common/scss/index.scss';
+@import './common/scss/index.scss';
 #app {
   position: fixed;
   top: 0;

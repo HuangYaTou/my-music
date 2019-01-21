@@ -1,5 +1,4 @@
 import * as types from './mutation-types'
-import { type } from 'os';
 
 const mutations = {
     [types.SET_MUSIC_LIST](state, musiclist) {

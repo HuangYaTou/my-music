@@ -104,7 +104,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-@import "~common/scss/variable";
+@import "../../common/scss/variable";
 .slider {
   min-height: 1px;
   position: relative;

@@ -152,8 +152,8 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-@import "~common/scss/variable";
-@import "~common/scss/mixin";
+@import "../../common/scss/variable";
+@import "../../common/scss/mixin";
  .recommend {
   position: fixed;
   width: 100%;
