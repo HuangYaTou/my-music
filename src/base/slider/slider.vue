@@ -31,7 +31,7 @@ export default {
         },
         interval: {
             type: Number,
-            type: 4000
+            default: 4000
         }
     },
     mounted() {
@@ -85,6 +85,7 @@ export default {
         },
         _onScrollEnd() {
             let pageIndex = this.slider.getCurrentPage().pageX;
+            // console.log('slider.vue--_onScrollEnd--pageIndex='+pageIndex+', autoPlay='+this.autoPlay+', interval='+this.interval);
             this.currentPageIndex = pageIndex;
             if(this.autoPlay) {
                 this._play();

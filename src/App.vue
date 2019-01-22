@@ -5,12 +5,14 @@
     <keep-alive>
       <router-view></router-view>
     </keep-alive>
+    <player></player>
   </div>
 </template>
 
 <script>
 import mHeader from './components/m-header/m-header'
 import tab from './components/tab/tab'
+import player from './components/player/player'
 
 export default {
   data() {
@@ -54,3 +56,10 @@ export default {
   overflow: hidden;
 }
 </style>
+
+<!--
+1、滚动插件：better-scroll
+2、懒加载：vue-lazyload
+3、数据请求：axios
+4、svg
+-->

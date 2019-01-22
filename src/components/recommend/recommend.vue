@@ -1,12 +1,12 @@
 <template>
     <div class="recommend" ref="recommend">
-        <scroll class="recommend-scroll" ref="scroll" :data="playList">
+        <scroll class="recommend-content" ref="scroll" :data="playList">
             <div>
                 <div v-show="banner.length" class="decorate" v-if="banner.length"></div>
                 <div v-if="banner.length" class="slider-wrapper">
                     <slider>
-                        <div v-for="item in banner" :key="item.id" @click="selectBanner(item)">
-                            <img :src="item.picUrl">
+                        <div v-for="item in banner" :key="item.id" @click.stop="selectBanner(item)">
+                            <img :src="item.imageUrl">
                         </div>
                     </slider>
                 </div>
@@ -108,6 +108,7 @@ export default {
     },
     _getBanner() {
       getBanner().then((res)=>{
+        // console.log('recommend.vue--_getBanner--res='+JSON.stringify(res));
         if(res.status === ERR_OK) {
           let list = res.data.banners;
           this.banner = list.splice(4);
