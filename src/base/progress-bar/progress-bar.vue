@@ -36,6 +36,9 @@ export default {
             const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth;
             const percent = this.$refs.progress.clientWidth / barWidth;
             this.$emit('percentChangeEnd', percent);
+        },
+        progressTouchStart(e) {
+
         }
     }
 }
