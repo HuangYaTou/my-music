@@ -7,6 +7,13 @@
 <script>
 import progressCircle from '../../base/progress-circle/progress-circle'
 import progressBar from '../../base/progress-bar/progress-bar'
+import lyric from 'lyric-parser'
+import scroll from '../../base/scroll/scroll'
+import playList from '../../components/playlist/playlist'
+import {mapGetters, mapMutations, mapActions} from 'vuex'
+import {getSong, getLyric} from '../../api/song'
+import {playMode} from '../../common/js/config'
+import {shuffle} from '../../common/js/utl'
 export default {
 
 }

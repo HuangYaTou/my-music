@@ -38,7 +38,40 @@ export default {
             this.$emit('percentChangeEnd', percent);
         },
         progressTouchStart(e) {
-
+            this.touch.initiated = true;
+            this.touch.startX = e.touches[0].pageX;
+            this.touch.left = this.$refs.progress.clientWidth;
+        },
+        progressTouchMove(e) {
+            if(!this.touch.initiated) return;
+            this._triggerPercent();
+            const deltaX = e.touches[0].pageX - this.touch.startX;
+            const offsetWidth = Math.min(Math.min(this.$refs.progressBar.clientWidth-progressBtnWidth, Math.max(0, this.touch.left+deltaX)));
+            this._offset(offsetWidth);
+        },
+        progressTouchEnd(e) {
+            this.touch.initiated = false;
+            const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth;
+            const percent = this.$refs.progress.clientWidth/barWidth;
+            this.$emit('percentChangeEnd', percent);
+        },
+        _triggerPercent() {
+            const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth;
+            const percent = this.$refs.progress.clientWidth / barWidth;
+            this.$emit('percentChange', percent);
+        },
+        _offset(offsetWidth) {
+            this.$refs.progress.style.width = `${offsetWidth}px`;
+            this.$refs.progressBtn.style[transform] = `translate3d(${offsetWidth}px, 0, 0)`;
+        }
+    },
+    watch: {
+        percent(newPercent) {
+            if(newPercent>=0&&!this.touch.initiated){
+                const barWidth = this.$refs.progressBar.clientWidth - progressBtnWidth;
+                const offsetWidth = newPercent*barWidth;
+                this._offset(offsetWidth);
+            }
         }
     }
 }

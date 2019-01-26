@@ -62,4 +62,5 @@ export default {
 2、懒加载：vue-lazyload
 3、数据请求：axios
 4、svg
+5、transition用法
 -->
