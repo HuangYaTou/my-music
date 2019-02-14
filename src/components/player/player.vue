@@ -1,6 +1,88 @@
 <template>
     <div class="player" v-show="playlist.length>0">
-
+      <transition name="normal">
+        <div class="normal-player" v-show="fullScreen" @touchstart.once="firstPlay">
+          <div class="background">
+            <div class="filter"></div>
+            <img :src="currentSong.image" width="100%" height="100%">
+          </div>
+          <div class="top">
+            <div class="back" @click="back">
+              <i class="fa fa-angle-down"></i>
+            </div>
+            <h1 class="title" v-html="currentSong.name"></h1>
+            <h2 class="subtitle" v-html="currentSong.singer"></h2>
+          </div>
+          <div class="middle" @click="changeMiddle">
+            <transition name="middleL">
+              <div class="middle-l" v-show="currentShow==='cd'">
+                <div class="cd-wrapper">
+                  <div class="cd" :class="cdCls">
+                    <img :src="currentSong.image" class="image">
+                  </div>
+                </div>
+              </div>
+            </transition>
+            <transition name="middleR">
+              <scroll class="middle-r" ref="lyricList" v-show="currentShow==='lyric'" :data="currentLyric && currentLyric.lines">
+                <div class="lyric-wrapper">
+                  <div class="currentLyric" v-if="currentLyric">
+                    <p ref="lyricLine" class="text" :class="{'current':currentLineNum===index}" v-for="(line, index) in currentLyric.lines" :key="line.key">{{line.txt}}</p>
+                  </div>
+                  <p class="no-lyric" v-if="currentLyric===null">{{updateCurrentLyric}}</p>
+                </div>
+              </scroll>
+            </transition>
+          </div>
+          <div class="bottom">
+            <div class="progress-wrapper">
+              <span class="time time-l">{{format(currentTime)}}</span>
+              <div class="progress-bar-wrapper">
+                <progress-bar :percent="percent" @percentChangeEnd="percentChangeEnd" @percentChange="percentChange"></progress-bar>
+              </div>
+              <span class="time time-r">{{format(duration)}}</span>
+            </div>
+            <div class="operators">
+              <div class="icon i-left">
+                <i class="iconfont mode" :class="iconMode" @click="changeMode"></i>
+              </div>
+              <div class="icon i-left">
+                <i class="iconfont icon-prev" @click="prev"></i>
+              </div>
+              <div class="icon i-center">
+                <i class="iconfont" @click="togglePlaying" :class="playIcon"></i>
+              </div>
+              <div class="icon i-right">
+                <i class="iconfont icon-test" @click="next"></i>
+              </div>
+              <div class="icon i-right">
+                <i class="iconfont" @click="toggleFavorite(currentSong)" :class="getFavoriteIcon(currentSong)"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
+      <transition name="mini">
+        <div class="mini-player" v-show="!fullScreen" @click.stop="open">
+          <div class="icon">
+            <img :src="currentSong.image" :class="cdCls" width="40" height="40">
+          </div>
+          <div class="text">
+            <h2 class="name" v-html="currentSong.name"></h2>
+            <div class="desc" v-html="currentSong.singer"></div>
+          </div>
+          <div class="control" @click.stop="togglePlaying">
+            <progress-circle :radius="radius" :percent="percent">
+              <i class="fa" :class="miniIcon"></i>
+            </progress-circle>
+          </div>
+          <div class="control" @click.stop="showPlayList">
+            <i class="iconfont icon-caidan1"></i>
+          </div>
+        </div>
+      </transition>
+      <play-list @stopMusic="stopMusic" ref="playlist"></play-list>
+      <audio id="music-audio" ref="audio" @ended="end" @canplay="ready" @error="error" @timeupdate="updateTime" autoplay></audio>
     </div>
 </template>
 
@@ -15,7 +97,309 @@ import {getSong, getLyric} from '../../api/song'
 import {playMode} from '../../common/js/config'
 import {shuffle} from '../../common/js/utl'
 export default {
-
+  data() {
+    return {
+      url: '',
+      songReady: false,
+      currentTime: 0,
+      duration: 0,
+      percent: 0,
+      radius: 32,
+      currentLyric: null,
+      currentLineNum: 0,
+      currentShow: 'cd',
+      playingLyric: '',
+      noLyric: false
+    }
+  },
+  components: {
+    progressBar,
+    progressCircle,
+    scroll,
+    playList
+  },
+  created() {
+    this.move = false;
+  },
+  computed: {
+    ...mapGetters([
+      'playlist',
+      'fullScreen',
+      'currentSong',
+      'playing',
+      'currentIndex',
+      'mode',
+      'sequenceList',
+      'favoriteList'
+    ]),
+    iconMode() {
+      if(this.mode===playMode.sequence) {
+        return 'icon-next';
+      }
+      else if(this.mode===playMode.loop) {
+        return 'icon-loop';
+      }
+      else {
+        return 'icon-random';
+      }
+    },
+    cdCls() {
+      return this.playing ? 'play' : 'play pause';
+    },
+    miniIcon() {
+      return this.playing ? 'fa-stop' : 'fa-play';
+    },
+    playIcon() {
+      return this.playing ? 'icon-stop' : 'icon-bofangicon';
+    },
+    updateCurrentLyric() {
+      if(this.noLyric) {
+        return '暂无歌词';
+      }
+      if(!this.noLyric) {
+        return '歌词加载中';
+      }
+    }
+  },
+  watch: {
+    currentSong(newVal, oldVal) {
+      if(!newVal.id) {
+        return;
+      }
+      if(newVal.id===oldVal.id) {
+        return;
+      }
+      this.$refs.audio.pause();
+      this.$refs.audio.currentTime = 0;
+      this._getSong(newVal.id);
+    },
+    url(newUrl) {
+      this._getLyric(this.currentSong.id);
+      this.$refs.audio.src = newUrl;
+      let stop = setInterval(()=>{
+        this.duration = this.$refs.audio.duration;
+        if(this.duration) {
+          clearInterval(stop);
+        }
+      }, 150);
+      this.setPlayingState(true);
+    },
+    currentTime() {
+      this.percent = this.currentTime/this.duration;
+    }
+  },
+  methods: {
+    firstPlay() {
+      console.log('player.vue firstPlay');
+      this.$refs.audio.play();
+    },
+    stopMusic() {
+      this.$refs.audio.pause();
+      console.log('player.vue stopMusic');
+    },
+    showPlayList() {
+      this.$refs.playList.show();
+    },
+    changeMiddle() {
+      if(this.currentShow==='cd') {
+        this.currentShow = 'lyric';
+      }
+      else {
+        this.currentShow = 'cd';
+      }
+    },
+    getFavoriteIcon(song) {
+      if(this.isFavorite(song)) {
+        return 'icon-like';
+      }
+      return 'icon-dislike';
+    },
+    toggleFavorite(song) {
+      if(this.isFavorite(song)) {
+        this.deleteFavoriteList(song);
+      }
+      else {
+        this.saveFavoriteList(song);
+      }
+    },
+    isFavorite(song) {
+      const index = this.favoriteList.findIndex((item)=>{
+        return item.id===song.id;
+      });
+      return index>-1;
+    },
+    changeMode() {
+      const mode = (this.mode+1)%3;
+      this.setPlayMode(mode);
+      let list = null;
+      if(mode===playMode.random) {
+        list = shuffle(this.sequenceList);
+      }
+      else {
+        list = this.sequenceList;
+      }
+      this._resetCurrentIndex(list);
+      this.setPlaylist(list);
+    },
+    togglePlaying() {
+      const audio = this.$refs.audio;
+      this.setPlayingState(!this.playing);
+      this.playing?audio.play():audio.pause();
+      if(this.currentLyric) {
+        this.currentLyric.togglePlay();
+      }
+    },
+    _getSong(id) {
+      getSong(id).then((res)=>{
+        this.url = res.data.data[0].url;
+      });
+    },
+    _getLyric(id) {
+      if(this.currentLyric) {
+        this.currentLyric.stop();
+        this.currentLyric = null;
+      }
+      this.noLyric = false;
+      getLyric(id).then((res)=>{
+        this.currentLyric = new lyric(res.data.lrc.lyric, this.handleLyric);
+        if(this.playing) {
+          this.currentLyric.play();
+          this.currentLineNum = 0;
+          this.$refs.lyricList.scrollTo(0,0,1000);
+        }
+      }).catch(()=>{
+        this.currentLyric = null;
+        this.noLyric = true;
+        this.currentLineNum = 0;
+      });
+    },
+    handleLyric({lineNum, txt}) {
+      this.currentLineNum = lineNum;
+      if(lineNum>5) {
+        let lineEl = this.$refs.lyricLine[lineNum-5];
+        this.$refs.lyricList.scrollToElement(lineEl, 1000);
+      }
+      else {
+        this.$refs.lyricList.scrollTo(0,0,1000);
+      }
+    },
+    _resetCurrentIndex(list) {
+      let index = list.findIndex((item)=>{
+        return item.id===this.currentSong.id;
+      });
+      this.setCurrentIndex(index);
+    },
+    percentChange(percent) {
+      this.move = true;
+      const currentTime = this.duration*percent;
+      this.currentTime = currentTime;
+      if(this.currentLyric) {
+        this.currentLyric.seek(currentTime*1000);
+      }
+    },
+    percentChangeEnd(percent) {
+      this.move = false;
+      const currentTime = this.duration*percent;
+      this.$refs.audio.currentTime = currentTime;
+      if(!this.playing) {
+        this.$refs.audio.play();
+        this.setPlayingState(true);
+      }
+      if(this.currentLyric) {
+        this.currentLyric.seek(currentTime);
+      }
+    },
+    updateTime(e) {
+      if(this.move) {
+        return;
+      }
+      this.currentTime = e.target.currentTime;
+    },
+    format(interval) {
+      interval = interval | 0;
+      let minute = interval/60 | 0;
+      let second = interval%60;
+      if(second<10){
+        second='0'+second;
+      }
+      return minute+':'+second;
+    },
+    end() {
+      if(this.mode===playMode.loop) {
+        this.loop();
+      }
+      else {
+        this.next();
+      }
+    },
+    loop() {
+      this.$refs.audio.currentTime = 0;
+      this.$refs.audio.play();
+      if(this.currentLyric) {
+        this.currentLyric.seek();
+      }
+    },
+    next() {
+      if(!this.songReady) {
+        return;
+      }
+      if(this.playlist.length===1) {
+        this.loop();
+        return;
+      }
+      else {
+        let index = this.currentIndex+1;
+        if(index===this.playlist.length) {
+          index=0;
+        }
+        this.setCurrentIndex(index);
+        if(!this.playing) {
+          this.togglePlaying();
+        }
+      }
+      this.songReady = false;
+    },
+    prev() {
+      if(!this.songReady) {
+        return;
+      }
+      let index = this.currentIndex-1;
+      if(index===-1){
+        index = this.playlist.length-1;
+      }
+      this.setCurrentIndex(index);
+      if(!this.playing) {
+        this.togglePlaying();
+      }
+      this.songReady = false;
+    },
+    back() {
+      this.setFullScreen(false);
+      this.currentShow = 'cd';
+    },
+    open() {
+      this.setFullScreen(true);
+    },
+    error() {
+      this.songReady = true;
+    },
+    ready() {
+      this.songReady = true;
+      this.savePlayHistory(this.currentSong);
+    },
+    ...mapMutations({
+      setFullScreen: 'SET_FULL_SCREEN',
+      setPlayingState: 'SET_PLAYING_STATE',
+      setCurrentIndex: 'SET_CURRENT_INDEX',
+      setPlayMode: 'SET_PLAY_MODE',
+      setPlaylist: 'SET_PLAYLIST'
+    }),
+    ...mapActions([
+      'saveFavoriteList',
+      'deleteFavoriteList',
+      'savePlayHistory'
+    ])
+  }
 }
 </script>
 

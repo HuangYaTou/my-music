@@ -101,6 +101,7 @@ export default {
       this.$refs.scroll.refresh();
     },
     selectList(item) {
+      console.log('recommend.vue selectList item.id='+item.id);
       this.$router.push({
         path: `/recommend/${item.id}`
       });

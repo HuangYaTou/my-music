@@ -42,6 +42,32 @@ export default {
             refreshDelay: 100
         }
     },
+    computed: {
+        modeText() {
+            return this.mode === playMode.sequence?'顺序播放':this.mode===playMode.random?'随机播放':'单曲循环';
+        },
+        iconMode() {
+            if(this.mode===playMode.sequence) {
+                return 'icon-next';
+            }
+            else if(this.mode===playMode.loop) {
+                return 'icon-loop';
+            }
+            else {
+                return 'icon-random';
+            }
+        },
+        ...mapGetters([
+            'fullScreen',
+            'playlist',
+            'currentSong',
+            'playing',
+            'currentIndex',
+            'mode',
+            'sequenceList',
+            'favoriteList'
+        ])
+    },
     methods: {
         hide(){
             this.showFlag = false;

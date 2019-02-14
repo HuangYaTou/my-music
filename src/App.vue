@@ -22,7 +22,8 @@ export default {
   },
   components: {
     mHeader,
-    tab
+    tab,
+    player
   },
   mounted() {
     let m = document.querySelector('#app');
