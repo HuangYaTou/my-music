@@ -58,8 +58,26 @@ export default {
             return this.data[this.currentIndex]?this.data[currentIndex].title:'';
         }
     },
-    watch: {},
-    methods: {}
+    watch: {
+        data() {
+            setTimeout(()=>{
+                this._calculateHeight();
+            }, 20);
+        },
+        scrollY(newY) {
+            const listHeight = this.listHeight;
+            if(newY>0) {
+                this.currentIndex = 0;
+                return;
+            }
+            for(let i=0; i<listHeight.length-1; i++) {
+
+            }
+        }
+    },
+    methods: {
+        _calculateHeight() {}
+    }
 }
 </script>
 
