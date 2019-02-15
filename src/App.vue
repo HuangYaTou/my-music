@@ -64,4 +64,6 @@ export default {
 3、数据请求：axios
 4、svg
 5、transition用法
+6、混合机制：mixins
+7、拼音插件：pinyin
 -->

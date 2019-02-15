@@ -261,11 +261,12 @@ export default {
       }
       this.noLyric = false;
       getLyric(id).then((res)=>{
+        // console.log('player.vue _getLyric lyric='+res.data.lrc.lyric);
         this.currentLyric = new lyric(res.data.lrc.lyric, this.handleLyric);
         if(this.playing) {
           this.currentLyric.play();
           this.currentLineNum = 0;
-          this.$refs.lyricList.scrollTo(0,0,1000);
+          // this.$refs.lyricList.scrollTo(0,0,1000);  //会引起报错
         }
       }).catch(()=>{
         this.currentLyric = null;
@@ -274,13 +275,14 @@ export default {
       });
     },
     handleLyric({lineNum, txt}) {
+      // console.log('player.vue handleLyric lineNum='+lineNum);
       this.currentLineNum = lineNum;
       if(lineNum>5) {
         let lineEl = this.$refs.lyricLine[lineNum-5];
         this.$refs.lyricList.scrollToElement(lineEl, 1000);
       }
       else {
-        this.$refs.lyricList.scrollTo(0,0,1000);
+        // this.$refs.lyricList.scrollTo(0,0,1000);
       }
     },
     _resetCurrentIndex(list) {

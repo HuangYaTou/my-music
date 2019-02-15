@@ -103,6 +103,7 @@ export default {
     selectList(item) {
       console.log('recommend.vue selectList item.id='+item.id);
       this.$router.push({
+        // path: `/recommend/${item.id}`
         path: `/recommend/${item.id}`
       });
       this.setMusicList(item);
