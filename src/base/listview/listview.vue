@@ -21,7 +21,7 @@
 
 <script>
 import scroll from '../../base/scroll/scroll'
-import getData from '../../common/js/dom'
+import {getData} from '../../common/js/dom'
 
 const ANCHOR_HEIGHT = 20;
 export default {
@@ -71,12 +71,64 @@ export default {
                 return;
             }
             for(let i=0; i<listHeight.length-1; i++) {
-
+                let height1 = listHeight[i];
+                let height2 = listHeight[i+1];
+                if(-newY>=height1&&-newY<height2) {
+                    this.currentIndex = i;
+                    return;
+                }
             }
+            this.currentIndex = listHeight.length-2;
         }
     },
     methods: {
-        _calculateHeight() {}
+        scroll(pos) {
+            this.scrollY = pos.y;
+        },
+        refresh() {
+            this.$refs.listview.refresh();
+        },
+        onShortcutStart(e) {
+            let anchorIndex = getData(e.target, 'index');
+            let firstTouch = e.touches[0];
+            this.touch.y1 = firstTouch.pageY;
+            this.touch.anchorIndex = anchorIndex;
+            this._scrollTo(anchorIndex);
+        },
+        onShortcutMove(e) {
+            let firstTouch = e.touches[0];
+            this.touch.y2 = firstTouch.pageY;
+            let delta = (this.touch.y2-this.touch.y1)/ANCHOR_HEIGHT | 0;
+            let anchorIndex = parseInt(this.touch.anchorIndex)+delta;
+            this._scrollTo(anchorIndex);
+        },
+        _scrollTo(index) {
+            if(!index && index !== 0) {
+                return;
+            }
+            if(index<0) {
+                index = 0;
+            }
+            else if(index > this.listHeight.length-2) {
+                index = this.listHeight.length-2;
+            }
+            this.scrollY = -this.listHeight[index];
+            this.$refs.listview.scrollToElement(this.$refs.listGroup[index],0);
+        },
+        _calculateHeight() {
+            this.listHeight = [];
+            const list = this.$refs.listGroup;
+            let height = 0;
+            this.listHeight.push(height);
+            for(let i=0; i<list.length; i++) {
+                let item = list[i];
+                height += item.clientHeight;
+                this.listHeight.push(height);
+            }
+        },
+        selectItem(item) {
+            this.$emit('select', item);
+        }
     }
 }
 </script>

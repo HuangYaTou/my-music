@@ -47,7 +47,8 @@ export default {
                     let py = pinyin(item.name[0], {
                         style: pinyin.STYLE_FIRST_LETTER
                     });
-                    item.initial - py[0][0].toUpperCase();
+                    item.initial = py[0][0].toUpperCase();
+                    // console.log('singer.vue _getSingers initial='+item.initial);
                 });
                 this.singers = this._normalizeSinger(s);
             })
@@ -93,15 +94,15 @@ export default {
                     hot.push(val);
                 }
             }
-            rst.sort((a, b) => {
+            ret.sort((a, b) => {
                 return a.title.charCodeAt(0)-b.title.charCodeAt(0);
             });
             return hot.concat(ret);
-        }
-    },
-    ...mapMutations({
-        setSinger: 'SET_SINGER'
-    })
+        },
+        ...mapMutations({
+            setSinger: 'SET_SINGER'
+        })
+    }
 }
 </script>
 

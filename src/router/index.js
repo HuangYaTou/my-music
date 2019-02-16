@@ -7,6 +7,7 @@ import Rank from '../components/rank/rank'
 import RankDetail from '../components/rank-detail/rank-detail'
 import Singer from '../components/singer/singer'
 import SingerDetail from '../components/singer-detail/singer-detail'
+import User from '../components/user/user'
 
 Vue.use(Router);
 
@@ -49,6 +50,9 @@ export default new Router({
         path: ':id',
         component: SingerDetail
       }]
+    }, {
+      path: '/user',
+      component: User
     }
   ]
 })
