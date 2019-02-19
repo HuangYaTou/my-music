@@ -35,6 +35,9 @@ import scroll from '../../base/scroll/scroll'
 import switches from '../../base/switches/switches'
 import songList from '../../base/song-list/song-list'
 import noResult from '../../base/no-result/no-result'
+import {loginStatus} from '../../api/login'
+import { ERR_OK } from '../../common/js/config'
+
 export default {
     components: {
         scroll,
@@ -50,6 +53,9 @@ export default {
                 {name:'最近播放'}
             ]
         }
+    },
+    created() {
+        // this.checkLoginStatus();
     },
     computed: {
         count() {
@@ -83,7 +89,7 @@ export default {
     },
     methods: {
         sequence() {
-            let list = this.currentIndex===0?this.favoriteList.length:this.playHistory.length;
+            let list = this.currentIndex===0?this.favoriteList:this.playHistory;
             if(list.length===0) {
                 return;
             }
@@ -99,6 +105,24 @@ export default {
         },
         selectSong(song) {
             this.insertSong(song);
+        },
+        checkLoginStatus() {
+            loginStatus().then((res)=>{
+                console.log('user.vue checkLoginStatus res='+JSON.stringify(res));
+                if(res.status===ERR_OK) {
+                    console.log('user.vue checkLoginStatus 已登录');
+                }
+                else {
+                    console.log('user.vue checkLoginStatus 获取登录状态失败！');
+                }
+            }).catch((res)=>{
+                // console.log(JSON.stringify(res));
+                if(res.response.status===301) {  //需要登录
+                    this.$router.push({
+                        path: '/login'
+                    });
+                }
+            })
         },
         ...mapActions([
             'insertSong',

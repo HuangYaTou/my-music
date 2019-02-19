@@ -1,3 +1,36 @@
+<template>
+  <transition name="search">
+    <div class="search" ref="searchWrapper">
+      <div class="search-box-wrapper">
+        <i class="fa fa-angle-left" @click="back"></i>
+        <search-box @query="onQueryChange" ref="searchBox"></search-box>
+      </div>
+      <scroll class="search-scroll-wrapper" ref="scroll" :pullup="pullup" @scrollToEnd="searchMore">
+        <div ref="search">
+          <div class="search-hots" v-show="!query">
+            <p class="title">热门搜索</p>
+            <span class="search-hots-item" v-for="item in hots" :key="item.id" @click="addQuery(item.first)">{{item.first}}</span>
+          </div>
+          <div class="shortcut-wrapper" v-show="!query">
+            <div class="search-history" v-show="searchHistory.length">
+              <h1 class="title">
+                <span class="text">搜索历史</span>
+                <span class="clear" @click="showConfirm"><i class="icon-clear"></i></span>
+              </h1>
+              <search-list @select="addQuery" @delete="deleteSearchHistory" :searches="searchHistory"></search-list>
+            </div>
+          </div>
+          <div class="search-result">
+            <suggest ref="suggest" @select="saveSearch" @refresh="refresh" :query="query"></suggest>
+          </div>
+        </div>
+      </scroll>
+      <confirm ref="confirm" @confirm="clearSearchHistory" text="是否清空历史记录？" confirmBtnText="清空"></confirm>
+      <router-view></router-view>
+    </div>
+  </transition>
+</template>
+
 <script>
 import scroll from '../../base/scroll/scroll'
 import {searchMixin, playlistMixin} from '../../common/js/mixin'
@@ -5,9 +38,63 @@ import {getSearchHot} from '../../api/search'
 import searchBox from '../../base/search-box/search-box'
 import confirm from '../../base/confirm/confirm'
 import suggest from '../../components/suggest/suggest'
+import searchList from '../../base/search-list/search-list'
 
 export default {
-
+  mixins: [searchMixin, playlistMixin],
+  components: {
+    scroll,
+    confirm,
+    suggest,
+    searchBox,
+    searchList
+  },
+  data() {
+    return {
+      pullup: true,
+      hots: []
+    }
+  },
+  created() {
+    this._getSearchHot();
+  },
+  methods: {
+    back() {
+      this.$router.back();
+      this.$refs.searchBox.clear();
+    },
+    showConfirm() {
+      this.$refs.confirm.show();
+    },
+    _getSearchHot() {
+      getSearchHot().then((res)=>{
+        this.hots = res.data.result.hots;
+      });
+    },
+    onQueryChange(query) {
+      this.query = query;
+    },
+    addQuery(query) {
+      this.$refs.searchBox.setQuery(query);
+    },
+    saveSearch() {
+      this.saveSearchHistory(this.query);
+    },
+    searchMore() {
+      // console.log('search.vue searchMore in');
+      this.$refs.suggest.searchMore();
+    },
+    refresh() {
+      setTimeout(()=>{
+        this.$refs.scroll.refresh();
+      }, 20);
+    },
+    handlePlaylist(playlist) {
+      const bottom = playlist.length>0?'60px':'';
+      this.$refs.searchWrapper.style.bottom = bottom;
+      this.refresh();
+    }
+  }
 }
 </script>
 

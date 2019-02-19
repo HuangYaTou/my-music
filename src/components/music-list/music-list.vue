@@ -81,7 +81,7 @@ export default {
                 return Math.floor(this.musicList.playCount);
             }
             else {
-                return Math.floor(this,musicList.playCount/10000)+'万';
+                return Math.floor(this.musicList.playCount/10000)+'万';
             }
         },
         bgStyle() {
@@ -128,9 +128,10 @@ export default {
                 this.$router.push('/recommend');
                 return;
             }
+            // console.log('music-list.vue _getRecommendListDetail id='+id);
             getRecommendListDetail(id).then((res)=>{
                 if(res.status==ERR_OK) {
-                    this.listDetail = res.data.result.tracks.map((item)=>{
+                    this.listDetail = res.data.playlist.tracks.map((item)=>{
                         return createRecommendListSong(item);
                     });
                 }

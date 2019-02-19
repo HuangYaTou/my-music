@@ -8,6 +8,8 @@ import RankDetail from '../components/rank-detail/rank-detail'
 import Singer from '../components/singer/singer'
 import SingerDetail from '../components/singer-detail/singer-detail'
 import User from '../components/user/user'
+import Search from '../components/search/search'
+import Login from '../components/login/login'
 
 Vue.use(Router);
 
@@ -53,6 +55,19 @@ export default new Router({
     }, {
       path: '/user',
       component: User
+    }, {
+      path: '/search',
+      component: Search,
+      children: [{
+        path: 'singer/:id',
+        component: SingerDetail
+      }, {
+          path: 'list/:id',
+          component: MusicList
+      }]
+    }, {
+      path: '/login',
+      component: Login
     }
   ]
 })

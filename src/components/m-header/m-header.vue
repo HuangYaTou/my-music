@@ -1,7 +1,8 @@
 <template>
     <div class="m-header">
         <h1 class="text">MUSIC</h1>
-        <router-link to="/user" class="mine" tag="div"><i class="iconfont icon-list"></i></router-link>
+        <!-- <router-link to="/user" class="mine" tag="div"><i class="iconfont icon-list"></i></router-link> -->
+        <router-link to="/login" class="mine" tag="div"><i class="iconfont icon-list"></i></router-link>
         <router-link to="/search" class="search" tag="div"><i class="iconfont icon-search"></i></router-link>
     </div>
 </template>

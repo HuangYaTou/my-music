@@ -33,10 +33,10 @@ export function createRecommendSong(music) {
 export function createRecommendListSong(music) {
     return new Song({
         id: music.id,
-        singer: singerName(music.artists),
+        singer: singerName(music.ar),
         name: music.name,
-        album: music.album.name,
-        image: music.album.picUrl
+        album: music.al.name,
+        image: music.al.picUrl
     });
 }
 

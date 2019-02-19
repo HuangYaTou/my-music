@@ -2,7 +2,7 @@ import * as types from './mutation-types'
 
 const mutations = {
     [types.SET_MUSIC_LIST](state, musiclist) {
-        state.musiclist = musiclist;
+        state.musicList = musiclist;
     },
     [types.SET_SINGER](state, singer) {
         state.singer = singer;

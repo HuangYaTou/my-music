@@ -103,14 +103,12 @@ export default {
     selectList(item) {
       console.log('recommend.vue selectList item.id='+item.id);
       this.$router.push({
-        // path: `/recommend/${item.id}`
         path: `/recommend/${item.id}`
       });
       this.setMusicList(item);
     },
     _getBanner() {
       getBanner().then((res)=>{
-        // console.log('recommend.vue--_getBanner--res='+JSON.stringify(res));
         if(res.status === ERR_OK) {
           let list = res.data.banners;
           this.banner = list.splice(4);

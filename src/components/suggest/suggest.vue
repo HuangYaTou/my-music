@@ -1,6 +1,37 @@
+<template>
+  <div class="suggest">
+    <div class="search-suggest" v-show="!searchShow&&query&&songs.length>0">
+      <p class="title" v-show="showSinger&&showList">最佳匹配</p>
+      <div class="search-suggest-item" v-if="showSinger&&suggest.artists" @click="selectItem(suggest.artists[0])">
+        <img :src="suggest.artists[0].img1v1Url" width="50" height="50">
+        <span>歌手：{{suggest.artists[0].name}}</span>
+      </div>
+      <div class="search-suggest-item" v-if="showList&&suggest.playlists" @click="selectList(suggest.playlists[0])">
+        <img :src="suggest.playlists[0].coverImgUrl" width="50" height="50">
+        <!-- <div class="text">
+          <p>歌单：{{suggest.playlists[0].name}}</p>
+          <div class="singer">{{suggest.albums[0].artists.name}}</div>
+        </div> -->
+        <span>歌单：{{suggest.playlists[0].name}}</span>
+      </div>
+    </div>
+    <ul class="suggest-list" ref="suggestList" v-show="!searchShow">
+      <li class="suggest-item" v-for="(item, index) in songs" :key="index" @click="selectSong(item)">
+        <div class="icon"><i></i></div>
+        <div class="name">
+          <p class="song">{{item.name}}</p>
+          <p class="singer">{{item.singer}}</p>
+        </div>
+      </li>
+      <loading v-show="haveMore&&query"></loading>
+    </ul>
+    <div class="no-result-wrapper" v-show="!haveMore&&query&&!songs.length">抱歉，暂无搜索结果</div>
+  </div>
+</template>
+
 <script>
-import loading from '../../base/loading/loading.'
-import singer from '../../common/js/singer'
+import loading from '../../base/loading/loading'
+import Singer from '../../common/js/singer'
 import {getSearchSongs, getSearchSuggest, getSongDetail} from '../../api/search'
 import {createSearchSong} from '../../common/js/song'
 import {mapMutations, mapActions} from 'vuex'
@@ -72,10 +103,67 @@ export default {
         this.suggest = res.data.result;
       });
     },
-    selectItem(item) {},
-    selectList(item) {},
-    selectSong(item) {},
-    searchMore() {}
+    selectItem(item) {
+      const singer = new Singer({
+        id: item.id,
+        name: item.name,
+        avatar: item.img1v1Url
+      });
+      this.$router.push({
+        path: `/search/singer/${singer.id}`
+      });
+      this.setSinger(singer);
+      this.$emit('select');
+    },
+    selectList(item) {
+      const list = [];
+      list.id = item.id;
+      list.name = item.name;
+      list.picUrl = item.coverImgUrl;
+      list.playCount = item.playCount;
+      this.$router.push({
+        path: `/search/list/${list.id}`
+      });
+      this.setMusicList(list);
+      this.$emit('select');
+    },
+    selectSong(item) {
+      getSongDetail(item.id).then((res)=>{
+        item.image = res.data.songs[0].al.picUrl;
+        this.insertSong(item);
+      });
+      this.$emit('select');
+    },
+    searchMore() {
+      // console.log('suggest.vue searchMore haveMore='+this.haveMore);
+      if(!this.haveMore) {
+        return;
+      }
+      if(!this.songs.length) {
+        return;
+      }
+      getSearchSongs(this.query, this.page).then((res)=>{
+        let list = res.data.result.songs;
+        if(!res.data.result.songs) {
+          this.haveMore = false;
+          return;
+        }
+        let ret = [];
+        list.forEach((item)=>{
+          ret.push(createSearchSong(item));
+        });
+        this.songs = this.songs.concat(ret);
+        this.$emit('select');
+        this.page += 30;
+      });
+    },
+    ...mapActions([
+      'insertSong'
+    ]),
+    ...mapMutations({
+      setSinger: 'SET_SINGER',
+      setMusicList: 'SET_MUSIC_LIST'
+    })
   },
 }
 </script>
